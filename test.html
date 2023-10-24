@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parse XML to HTML Table</title>
+    <style>
+    </style>
+    <script type="text/javascript">
+        var txt1 = "<students><student>";
+        txt1 += "<id>987456</id>";
+        txt1 += "<name>Marie Curie</name>";
+        txt1 += "<birthday>7/11/1867</birthday>";
+        txt1 += "<gender>Woman</gender>";
+        txt1 += "</student></students>";
+
+        var txt2 = "<students><student>";
+        txt2 += "<id>987561</id>";
+        txt2 += "<name>Einstein</name>";
+        txt2 += "<birthday>14/3/1879</birthday>";
+        txt2 += "<gender>Man</gender>";
+        txt2 += "</student></students>";
+
+        var txt3 = "<students><student>";
+        txt3 += "<id>985467</id>";
+        txt3 += "<name>Leó Szilárd</name>";
+        txt3 += "<birthday>11/2/1898</birthday>";
+        txt3 += "<gender>Man</gender>";
+        txt3 += "</student></students>";
+
+        var parser = new DOMParser();
+        var xmlDoc1 = parser.parseFromString(txt1, "text/xml");
+        var xmlDoc2 = parser.parseFromString(txt2, "text/xml");
+        var xmlDoc3 = parser.parseFromString(txt3, "text/xml");
+
+        window.onload = function() {
+            var table = document.querySelector("table");
+            var studentRows = [];
+
+            function displayStudents(students) {
+                for (var i = 0; i < students.length; i++) {
+                    var student = students[i];
+                    var studentId = student.getElementsByTagName("id")[0].textContent;
+                    var studentName = student.getElementsByTagName("name")[0].textContent;
+                    var studentBirthday = student.getElementsByTagName("birthday")[0].textContent;
+                    var studentGender = student.getElementsByTagName("gender")[0].textContent;
+
+                    var row = table.insertRow(-1);
+                    var tdid = row.insertCell(0);
+                    var tdname = row.insertCell(1);
+                    var tdbirth = row.insertCell(2);
+                    var tdgender = row.insertCell(3);
+
+                    tdid.innerHTML = studentId;
+                    tdname.innerHTML = studentName;
+                    tdbirth.innerHTML = studentBirthday;
+                    tdgender.innerHTML = studentGender;
+                    // Add mouseover and mouseout event 
+                    for (var i = 2; i < table.rows.length; i++) {
+                table.rows[i].addEventListener("mouseover", function() {
+                    this.style.backgroundColor = "yellow";
+                });
+
+                table.rows[i].addEventListener("mouseout", function() {
+                    this.style.backgroundColor = "white";
+                });
+            }
+                    // Add an onclick event to open student pages
+                    row.onclick = (function (id) {
+                        return function () {
+                            openStudentPage(id);
+                        };
+                    })(studentId);
+
+                    // Store the row data for sorting
+                    studentRows.push({ row, studentId, studentName, studentBirthday, studentGender });
+                }
+            }
+
+            var students1 = xmlDoc1.getElementsByTagName("student");
+            var students2 = xmlDoc2.getElementsByTagName("student");
+            var students3 = xmlDoc3.getElementsByTagName("student");
+            displayStudents(students1);
+            displayStudents(students2);
+            displayStudents(students3);
+
+            // Column sorting functions
+            function sortTable(columnIndex, ascending) {
+                studentRows.sort(function (a, b) {
+                    var valueA = a.row.cells[columnIndex].textContent;
+                    var valueB = b.row.cells[columnIndex].textContent;
+                    return ascending ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+                });
+
+                // Clear the table
+                while (table.rows.length > 2) {
+                    table.deleteRow(2);
+                }
+
+                // Rebuild the table with sorted rows
+                for (var i = 0; i < studentRows.length; i++) {
+                    table.appendChild(studentRows[i].row);
+                }
+            }
+            
+
+            // Add click event listeners to column headers for sorting
+            for (var columnIndex = 0; columnIndex < table.rows[1].cells.length; columnIndex++) {
+                table.rows[1].cells[columnIndex].addEventListener("click", function () {
+                    var columnIndex = this.cellIndex;
+                    var ascending = true;
+
+                    if (this.classList.contains("sorted-asc")) {
+                        ascending = false;
+                        this.classList.remove("sorted-asc");
+                    } else {
+                        this.classList.add("sorted-asc");
+                    }
+
+                    sortTable(columnIndex, ascending);
+                });
+            }
+            function openStudentPage(studentId) {
+            // Link to the student's detail page based on their ID
+            window.location.href = studentId + ".html";
+        }
+        };
+        
+    </script>
+</head>
+<body>
+    <table border="1">
+        <tr>
+            <td colspan="4"
+                style="text-align: center;
+                font-weight: bold;
+                background-color: yellow;">
+                List of Students
+            </td>
+        </tr>
+        <tr style="background-color: green;">
+            <th>Student ID</th>
+            <th>Full Name</th>
+            <th>Date of Birth</th>
+            <th>Gender</th>
+        </tr>
+    </table>
+</body>
+</html>
